@@ -16,13 +16,13 @@ Data is stored in PostgreSQL.
 
 ### Getting started
 
-## Back-end setup
+### Back-end setup
 ```
 cd back-end
 mvn spring-boot:run
 ```
 
-## Front-end setup
+### Front-end setup
 ```
 cd front-end
 ng serve
