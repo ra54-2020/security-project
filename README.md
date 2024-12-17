@@ -14,8 +14,6 @@
 For the server-side, I used Java with the Spring Boot framework, while the client-side was built using TypeScript, HTML, and CSS within the Angular framework. 
 Data is stored in PostgreSQL.
 
-### Getting started
-
 ### Back-end setup
 ```
 cd back-end
