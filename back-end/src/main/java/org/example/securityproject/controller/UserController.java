@@ -25,5 +25,4 @@ public class UserController {
     public ResponseEntity<RegistrationResponseDto> registerUser(@RequestBody UserDto userDto) throws Exception {
         return new ResponseEntity<>(userService.registerUser(userDto), HttpStatus.OK);
     }
-    
 }

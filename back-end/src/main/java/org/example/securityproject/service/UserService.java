@@ -1,35 +1,46 @@
 package org.example.securityproject.service;
 
 import org.example.securityproject.model.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.validation.Valid;
+
 import org.example.securityproject.dto.RegistrationResponseDto;
 import org.example.securityproject.dto.UserDto;
 import org.example.securityproject.enums.RegistrationStatus;
 import org.example.securityproject.enums.UserType;
 import org.example.securityproject.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     @Autowired
     private UserRepository userRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    public RegistrationResponseDto registerUser(UserDto userDto) {
-        validateUserDto(userDto);
-
-        String hashedPassword = passwordEncoder.encode(userDto.getPassword());
-
+    @Transactional
+    public RegistrationResponseDto registerUser(@Valid UserDto userDto) {
+        logger.info("Starting user registration for email: {}", userDto.getEmail());
+        RegistrationResponseDto response = new RegistrationResponseDto();
+        
+        User existingUser = userRepository.findByEmail(userDto.getEmail());
+        if(existingUser != null) {
+            response.setMessageResponse("User with this email already exists");
+            response.setFlag(false);
+            return response;
+        }
+        
         User user = new User();
         user.setEmail(userDto.getEmail());
-        user.setPassword(hashedPassword); //cuvam hashovanu sifru
+        user.setPassword(passwordEncoder.encode(userDto.getPassword())); //cuvam hashovanu sifru
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
         user.setAddress(userDto.getAddress());
@@ -40,57 +51,26 @@ public class UserService {
         user.setUserType(userDto.getUserType());
         user.setRegistrationStatus(RegistrationStatus.PENDING);
         user.setPackageService(userDto.getPackageService());
-
-        if(userDto.getUserType() == UserType.LEGAL) {
-            user.setCompanyName(userDto.getCompanyName());
-            user.setPib(userDto.getPib());
+        user.setCompanyName(userDto.getCompanyName());
+        user.setPib(userDto.getPib());
+        
+        try {
+            userRepository.save(user);
+        } catch (DataAccessException e) {
+            logger.error("Error saving user to the database: {}", e.getMessage());
+            response.setFlag(false);
+            response.setMessageResponse("Error during registration. Please try again later.");
+            return response;
         }
 
         userRepository.save(user);
-        RegistrationResponseDto dto = new RegistrationResponseDto();
-        dto.setFlag(true);
-        dto.setMessageResponse("Registration successfull");
-        return dto;
+
+        response.setFlag(true);
+        response.setMessageResponse("Registration successfull");
+        return response;
     }
 
-    private void validateUserDto(UserDto userDto) {
-        if(userDto.getEmail() == null || userDto.getEmail().isEmpty()) {
-            throw new IllegalArgumentException("Email is required");
-        }
-        if(!isEmailValid(userDto.getEmail())) {
-            throw new IllegalArgumentException("Invalid email format");
-        }
-        if(!isPasswordValid(userDto.getPassword())) {
-            throw new IllegalArgumentException("Password does not meet security requirements");
-        }
-        if (!userDto.getPassword().equals(userDto.getConfirmPassword())) {
-            throw new IllegalArgumentException("Passwords do not match. Please re-enter both fields");
-        } 
-        if(!areAllFieldsFilled(userDto)) {
-            throw new IllegalArgumentException("all fields are required");
-        }
-    }
-
-    private boolean isEmailValid(String email) {
-        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
-        return email != null && email.matches(emailRegex);
-    }    
-
-    private boolean isPasswordValid(String password) {
-        String passwordRegex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{12,}$";
-        return password != null && password.matches(passwordRegex);
-    }
-
-    private boolean areAllFieldsFilled(UserDto userDto) {
-        return  userDto.getFirstName() != null && !userDto.getFirstName().isEmpty() &&
-                userDto.getLastName() != null && !userDto.getLastName().isEmpty() &&
-                userDto.getEmail() != null && !userDto.getEmail().isEmpty() &&
-                userDto.getAddress() != null && !userDto.getAddress().isEmpty() &&
-                userDto.getCity() != null && !userDto.getCity().isEmpty() &&
-                userDto.getCountry() != null && !userDto.getCountry().isEmpty() &&
-                userDto.getPhoneNumber() != null && !userDto.getPhoneNumber().isEmpty() &&
-                userDto.getUserType() != null &&
-                userDto.getRoles() != null &&
-                userDto.getPackageService() != null;
+    public boolean validatePassword(String rawPassword, String encodedPassword) {
+        return passwordEncoder.matches(rawPassword, encodedPassword);
     }
 }

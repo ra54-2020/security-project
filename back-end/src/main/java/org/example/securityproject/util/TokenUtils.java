@@ -1,8 +1,6 @@
 package org.example.securityproject.util;
 
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -210,17 +208,6 @@ public class TokenUtils {
         return (username != null // korisnicko ime nije null
                 && username.equals(userDetails.getUsername())); // korisnicko ime iz tokena se podudara sa korisnickom imenom koje pise u bazi
                // && !isCreatedBeforeLastPasswordReset(created, user.getLastPasswordResetDate())); // nakon kreiranja tokena korisnik nije menjao svoju lozinku
-    }
-
-    /**
-     * Funkcija proverava da li je lozinka korisnika izmenjena nakon izdavanja tokena.
-     *
-     * @param created           Datum kreiranja tokena.
-     * @param lastPasswordReset Datum poslednje izmene lozinke.
-     * @return Informacija da li je token kreiran pre poslednje izmene lozinke ili ne.
-     */
-    private Boolean isCreatedBeforeLastPasswordReset(Date created, Date lastPasswordReset) {
-        return (lastPasswordReset != null && created.before(lastPasswordReset));
     }
 
      /**

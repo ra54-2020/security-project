@@ -37,7 +37,8 @@ public class UserDto {
 
     public UserDto(User user) {
         this.email = user.getEmail();
-        this.password = null; 
+        this.password = user.getPassword(); 
+        this.confirmPassword = "";
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
         this.address = user.getAddress();
@@ -50,6 +51,24 @@ public class UserDto {
         this.registrationStatus = user.getRegistrationStatus();
         this.companyName = user.getCompanyName();
         this.pib = user.getPib();
+    }
+
+    public UserDto(String email, String password, String confirmPassword, String firstName, String lastName, String address, String city, String country, String phoneNumber, UserType userType, List<UserRole> roles, PackageService packageService, RegistrationStatus registrationStatus, String companyName, String pib) {
+        this.email = email;
+        this.password = password;
+        this.confirmPassword = confirmPassword;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.address = address;
+        this.city = city;
+        this.country = country;
+        this.phoneNumber = phoneNumber;
+        this.userType = userType;
+        this.roles = roles;
+        this.packageService = packageService;
+        this.registrationStatus = registrationStatus;
+        this.companyName = companyName;
+        this.pib = pib;
     }
 
     public String getEmail() {

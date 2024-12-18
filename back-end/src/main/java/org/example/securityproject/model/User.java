@@ -12,6 +12,9 @@ import org.example.securityproject.enums.*;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import org.springframework.security.core.GrantedAuthority;
 
 
@@ -29,9 +32,6 @@ public class User implements UserDetails {
 
     @Column(name = "password", nullable = false)
     private String password;
-
-    @Column(name = "salt", nullable = false)
-    private String salt;
 
     @Column(name = "firstName", nullable = true)
     private String firstName;
@@ -69,21 +69,20 @@ public class User implements UserDetails {
     private RegistrationStatus registrationStatus;
 
     //za pravno lice
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @Column(name = "companyName", nullable = true)
     private String companyName;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @Column(name = "pib", nullable = true)
     private String pib;
 
-    private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
     public User() {}
 
-    public User(Integer id, String email, String password, String salt, String firstName, String lastName, String address, String city, String country, String phoneNumber, UserType userType, List<UserRole> roles, PackageService packageServce, RegistrationStatus registrationStatus, String companyName, String pib) {
+    public User(Integer id, String email, String password, String firstName, String lastName, String address, String city, String country, String phoneNumber, UserType userType, List<UserRole> roles, PackageService packageServce, RegistrationStatus registrationStatus, String companyName, String pib) {
         this.id = id;
         this.email = email;
         this.password = password;
-        this.salt = salt;
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;
@@ -110,6 +109,7 @@ public class User implements UserDetails {
     public String getUsername() {
         return this.email; // Ova metoda je obavezna zbog UserDetails interfejsa
     }
+
     public String getEmail() {
         return email;
     }
@@ -123,19 +123,7 @@ public class User implements UserDetails {
     }
 
     public void setPassword(String password) {
-        this.password = passwordEncoder.encode(password); // hashing lozinke
-    }
-
-    public boolean checkPassword(String password) {
-        return passwordEncoder.matches(password, this.password);  // provera da li lozinka odgovara
-    }
-
-    public String getSalt() {
-        return salt;
-    }
-
-    public void setSalt(String salt) {
-        this.salt = salt;
+        this.password = password;
     }
 
     public String getFirstName() {
@@ -143,12 +131,7 @@ public class User implements UserDetails {
     }
 
     public void setFirstName(String firstName) {
-        if(userType == UserType.INDIVIDUAL) {
-            this.firstName = firstName;
-        }
-        else {
-            this.firstName = null;
-        }
+        this.firstName = firstName;
     }
 
     public String getLastName() {
@@ -156,12 +139,7 @@ public class User implements UserDetails {
     }
 
     public void setLastName(String lastName) {
-        if(userType == UserType.INDIVIDUAL) {
-            this.lastName = lastName;
-        }
-        else {
-            this.lastName = null;
-        }
+        this.lastName = lastName;
     }
 
     public String getAddress() {
@@ -233,12 +211,7 @@ public class User implements UserDetails {
     }
 
     public void setCompanyName(String companyName) {
-        if(userType == UserType.LEGAL) {
-            this.companyName = companyName;
-        }
-        else {
-            this.companyName = null;
-        }
+        this.companyName = companyName;
     }
 
     public String getPib() {
@@ -246,12 +219,7 @@ public class User implements UserDetails {
     }
 
     public void setPib(String pib) {
-        if(userType == UserType.LEGAL) {
-            this.pib = pib;
-        }
-        else {
-            this.pib = null;
-        }
+        this.pib = pib;
     }
 
     @Override
